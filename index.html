@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <title> Havo.uz | O'zbekiston va dunyo ob-havosi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --chip-bg: #f1f5f9;
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --star-color: #eab308;
+            --star-default: #cbd5e1;
+        }
+
+        body.dark {
+            --card-bg: rgba(15, 23, 42, 0.95);
+            --text-main: #f1f5f9;
+            --text-muted: #cbd5e1;
+            --chip-bg: #1e293b;
+            --star-default: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        body[data-weather="clear"] { background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%); }
+        body[data-weather="clouds"] { background: linear-gradient(135deg, #94a3b8 0%, #475569 100%); }
+        body[data-weather="rain"] { background: linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%); }
+        body[data-weather="snow"] { background: linear-gradient(135deg, #e2e8f0 0%, #ffffff 100%); }
+        body[data-weather="thunderstorm"] { background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%); }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 12px 0;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo {
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .logo:active { transform: scale(0.97); }
+        .logo h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .logo p { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
+
+        .nav-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .nav-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.35); }
+
+        .lang-group, .theme-group {
+            display: flex;
+            gap: 6px;
+            background: rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 60px;
+        }
+
+        .lang-option, .theme-option {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.75rem;
+        }
+        .lang-option.active, .theme-option.active {
+            background: white;
+            color: #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .theme-option { font-size: 1.1rem; padding: 4px 12px; }
+
+        .search-wrapper {
+            margin: 28px auto 32px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .search-card {
+            background: var(--card-bg);
+            border-radius: 80px;
+            padding: 4px 6px 4px 20px;
+            display: flex;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            width: 100%;
+        }
+        .search-card input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            padding: 14px 0;
+            color: var(--text-main);
+            min-width: 0;
+        }
+        .search-card button {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 10px 26px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .search-card button:active { transform: scale(0.95); }
+
+        .regions-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            padding: 20px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-md);
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 10px;
+        }
+        .region-item {
+            background: var(--chip-bg);
+            border: none;
+            padding: 10px 6px;
+            border-radius: 28px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow-x: auto;
+            text-overflow: ellipsis;
+        }
+        .region-item:active { transform: scale(0.96); }
+        .region-item.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        }
+
+        .weather-main {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-lg);
+        }
+        .weather-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .temp-block { text-align: center; }
+        .weather-icon { font-size: 4rem; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.2)); animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)}}
+        .temp-big { font-size: 4rem; font-weight: 800; line-height: 1; letter-spacing: -3px; }
+        .feels-like { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+        .city-name { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; word-break: break-word; }
+        .weather-desc-text { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
+        .chips { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .chip { background: var(--chip-bg); padding: 6px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
+
+        .stats-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .stat-item {
+            background: var(--chip-bg);
+            border-radius: 28px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-icon { font-size: 1.6rem; margin-bottom: 6px; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); }
+        .stat-value { font-size: 1.2rem; font-weight: 700; margin-top: 4px; word-break: break-word; }
+
+        .hourly-card, .details-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            padding: 22px;
+            margin-bottom: 28px;
+        }
+        .hourly-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .hourly-scroll::-webkit-scrollbar { height: 4px; }
+        .hourly-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .hourly-scroll::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+        .hour-item {
+            min-width: 85px;
+            background: var(--chip-bg);
+            border-radius: 32px;
+            padding: 12px 8px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .hour-time { font-weight: 700; font-size: 0.7rem; margin-bottom: 4px; color: var(--text-muted); }
+        .hour-icon { font-size: 1.6rem; margin: 6px 0; }
+        .hour-temp { font-weight: 700; font-size: 0.9rem; }
+
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .detail-item {
+            background: var(--chip-bg);
+            border-radius: 28px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .detail-icon { font-size: 1.8rem; flex-shrink: 0; }
+        .detail-item div { overflow: hidden; }
+        .detail-label { font-size: 0.7rem; color: var(--text-muted); }
+        .detail-value { font-size: 0.9rem; font-weight: 700; word-break: break-word; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 48px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 85vh;
+            overflow: auto;
+        }
+        .modal-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border-radius: 48px 48px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-modal { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; line-height: 1; }
+        
+        .country-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .country-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--chip-bg);
+            border-radius: 28px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .country-item:active { transform: scale(0.98); }
+        .country-name {
+            font-size: 1rem;
+            font-weight: 500;
+            flex: 1;
+        }
+        .star-btn {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: var(--star-default);
+            transition: 0.1s;
+            padding: 5px;
+            line-height: 1;
+        }
+        .star-btn.active {
+            color: var(--star-color);
+        }
+        .star-btn:active { transform: scale(0.9); }
+        
+        .map-frame { width: 100%; height: 320px; border: none; }
+        .map-info { padding: 20px; background: var(--chip-bg); }
+        .location-search { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+        .location-search input { flex: 1; padding: 12px; border-radius: 60px; border: none; background: var(--card-bg); color: var(--text-main); min-width: 120px; }
+        .location-search button { padding: 12px 20px; border-radius: 60px; border: none; background: var(--primary-gradient); color: white; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .contact-inner { padding: 24px; text-align: center; }
+        .contact-details { background: var(--chip-bg); border-radius: 32px; padding: 20px; margin: 20px 0; text-align: left; }
+        .contact-details div { margin-bottom: 12px; word-break: break-word; }
+        .telegram-link {
+            display: inline-flex;
+            gap: 10px;
+            background: #2aabee;
+            padding: 12px 28px;
+            border-radius: 60px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            align-items: center;
+        }
+        .footer {
+            text-align: center;
+            padding: 24px;
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .loading-state { text-align: center; padding: 60px; background: var(--card-bg); border-radius: 48px; }
+        .error-state { text-align: center; padding: 40px; background: var(--card-bg); border-radius: 48px; color: #f97316; }
+        
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1100;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .header-flex { flex-direction: column; text-align: center; }
+            .logo h1 { font-size: 1.3rem; }
+            .nav-group { justify-content: center; gap: 10px; }
+            .nav-btn { padding: 6px 12px; font-size: 0.75rem; }
+            .lang-option, .theme-option { padding: 4px 10px; font-size: 0.7rem; }
+            .search-wrapper { margin: 20px auto 24px; }
+            .search-card { padding: 3px 5px 3px 16px; }
+            .search-card input { padding: 10px 0; font-size: 0.9rem; }
+            .search-card button { padding: 8px 18px; font-size: 0.85rem; }
+            .regions-card { padding: 16px; border-radius: 28px; }
+            .region-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 8px; }
+            .region-item { padding: 8px 4px; font-size: 0.7rem; white-space: normal; }
+            .weather-main { padding: 20px; border-radius: 36px; }
+            .weather-row { flex-direction: column; text-align: center; gap: 16px; }
+            .temp-big { font-size: 3rem; }
+            .weather-icon { font-size: 3rem; }
+            .city-name { font-size: 1.4rem; }
+            .stats-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+            .hourly-card, .details-card { padding: 16px; border-radius: 28px; }
+            .hour-item { min-width: 70px; }
+            .hour-time { font-size: 0.6rem; }
+            .hour-icon { font-size: 1.3rem; }
+            .details-grid { grid-template-columns: 1fr; gap: 10px; }
+            .detail-item { padding: 12px; gap: 10px; }
+            .detail-icon { font-size: 1.5rem; }
+            .chips { justify-content: center; }
+            .modal-content { border-radius: 32px; max-height: 90vh; }
+            .modal-header { padding: 14px 18px; }
+            .map-frame { height: 250px; }
+            .map-info { padding: 14px; }
+            .location-search { flex-direction: column; }
+            .location-search input { width: 100%; }
+            .location-search button { width: 100%; }
+            .contact-inner { padding: 18px; }
+            .country-list { padding: 12px; }
+            .country-item { padding: 10px 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .nav-group { gap: 6px; }
+            .nav-btn { padding: 5px 10px; font-size: 0.7rem; }
+            .region-grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; }
+            .region-item { font-size: 0.65rem; padding: 6px 3px; }
+            .temp-big { font-size: 2.5rem; }
+            .city-name { font-size: 1.2rem; }
+            .hour-item { min-width: 65px; }
+            .hour-time { font-size: 0.55rem; }
+            .hour-icon { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-header">
+        <div class="container header-flex">
+            <div class="logo" id="homeBtn">
+                <h1 id="logoTitle">🇺🇿 Ob-Havo</h1>
+                <p id="logoSub">13 viloyat | 400+ DAVLATLAR| Aniq prognoz</p>
+            </div>
+            <div class="nav-group">
+                <button class="nav-btn" id="navHomeBtn">🏠 Bosh sahifa</button>
+                <button class="nav-btn" id="navMapBtn">🗺️ Karta</button>
+                <button class="nav-btn" id="navCountriesBtn">🌍 Davlatlar</button>
+                <button class="nav-btn" id="navContactBtn">📞 Bog'lanish</button>
+                <div class="lang-group" id="langGroup">
+                    <button data-lang="uz" class="lang-option">🇺🇿 Uzb</button>
+                    <button data-lang="ru" class="lang-option">🇷🇺 Rus</button>
+                    <button data-lang="en" class="lang-option">🇬🇧 Eng</button>
+                </div>
+                <div class="theme-group" id="themeGroup">
+                    <button data-theme="light" class="theme-option">☀️</button>
+                    <button data-theme="dark" class="theme-option">🌙</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-wrapper">
+            <div class="search-card">
+                <input type="text" id="citySearchInput" placeholder="Tashkent, London, New York..." value="Tashkent">
+                <button id="searchCityBtn">Izlash</button>
+            </div>
+        </div>
+        <div id="dynamicContent"></div>
+    </div>
+
+    <div id="countriesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="countriesModalTitle">🌍 Davlatlar</span>
+                <button class="close-modal" id="closeCountriesBtn">✕</button>
+            </div>
+            <div id="countriesList" class="country-list"></div>
+        </div>
+    </div>
+
+    <div id="countryWeatherModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="countryWeatherTitle">Ob-havo</span>
+                <button class="close-modal" id="closeCountryWeatherBtn">✕</button>
+            </div>
+            <div id="countryWeatherContent" class="map-info" style="text-align: center;"></div>
+        </div>
+    </div>
+
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><span>🗺️ Google Xarita</span><button class="close-modal" id="closeMapBtn">✕</button></div>
+            <iframe id="mapIframe" class="map-frame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d250000!2d69.2!3d41.3!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5b9324bcfc6f54!2sTashkent!5e0!3m2!1sen!2s!4v1700000000000"></iframe>
+            <div class="map-info">
+                <div id="mapWeatherInfo">📍 Shahar nomini yozing</div>
+                <div class="location-search"><input type="text" id="mapLocationInput" placeholder="Shahar nomi..."><button id="mapSearchLocationBtn">Qidirish</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><span>📞 Bog'lanish</span><button class="close-modal" id="closeContactBtn">✕</button></div>
+            <div class="contact-inner">
+                <div class="contact-details">
+                    <div> Mexmedjon Developer! </div>
+                    <div>📍 Uzbekistan </div>
+                    <div>Telegram orqali yozing⬇️</div>
+                </div>
+                <a href="https://t.me/developer_mexmedjon" target="_blank" class="telegram-link">📨 Telegram orqali bog'lanish</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer"><p id="footerText">© 2026 O'zbekiston Ob-Havo | Real vaqt | 13 ta viloyat | 400+ DAVLATLAR</p></div>
+
+    <script>
+        const API_KEY = '7524f1b1974f45a291403dcd7fde613e';
+        
+        const REGIONS = {
+            uz: ['Toshkent','Samarqand','Buxoro','Xorazm','Navoiy','Qashqadaryo','Surxondaryo','Jizzax','Sirdaryo','Namangan','Andijon','Fargʻona','Qoraqalpogʻiston'],
+            ru: ['Ташкент','Самарканд','Бухара','Хорезм','Навои','Кашкадарья','Сурхандарья','Джизак','Сырдарья','Наманган','Андижан','Фергана','Каракалпакстан'],
+            en: ['Tashkent','Samarkand','Bukhara','Khorezm','Navoi','Kashkadarya','Surkhandarya','Jizzakh','Sirdarya','Namangan','Andijan','Fergana','Karakalpakstan']
+        };
+        const API_NAMES = ['Tashkent','Samarkand','Bukhara','Urgench','Navoi','Qarshi','Termez','Jizzakh','Gulistan','Namangan','Andijan','Fergana','Nukus'];
+        
+        const COUNTRIES = [
+            "Uzbekistan", "Russia", "USA", "United Kingdom", "Germany", "France", "Italy", "Spain", "Turkey", "UAE",
+            "China", "Japan", "South Korea", "India", "Pakistan", "Kazakhstan", "Kyrgyzstan", "Tajikistan", "Turkmenistan",
+            "Azerbaijan", "Georgia", "Armenia", "Ukraine", "Poland", "Sweden", "Norway", "Finland", "Denmark", "Netherlands",
+            "Belgium", "Switzerland", "Austria", "Czech Republic", "Slovakia", "Hungary", "Romania", "Bulgaria", "Greece",
+            "Egypt", "Saudi Arabia", "Qatar", "Kuwait", "Bahrain", "Oman", "Jordan", "Israel", "Lebanon", "Syria",
+            "Iraq", "Iran", "Afghanistan", "Bangladesh", "Sri Lanka", "Nepal", "Thailand", "Vietnam", "Malaysia",
+            "Singapore", "Indonesia", "Philippines", "Australia", "New Zealand", "South Africa", "Morocco", "Algeria",
+            "Tunisia", "Libya", "Sudan", "Ethiopia", "Kenya", "Nigeria", "Ghana", "Brazil", "Argentina", "Chile",
+            "Peru", "Colombia", "Venezuela", "Mexico", "Canada", "Portugal", "Ireland", "Luxembourg", "Monaco",
+            "Liechtenstein", "Malta", "Cyprus", "Iceland", "Estonia", "Latvia", "Lithuania", "Belarus", "Moldova",
+            "Albania", "North Macedonia", "Kosovo", "Montenegro", "Serbia", "Croatia", "Slovenia", "Bosnia", "Mongolia"
+        ];
+        
+        let favorites = JSON.parse(localStorage.getItem('favoriteCountries')) || [];
+        
+        const TEXTS = {
+            uz: { logoTitle: "🇺🇿 Ob-Havo", logoSub: "13 viloyat | 400+ DAVLATLAR | Aniq prognoz", navHome: "🏠 Bosh sahifa", navMap: "🗺️ Karta", navCountries: "🌍 Davlatlar", navContact: "📞 Bog'lanish", searchPlaceholder: "Shahar nomi...", searchBtn: "Izlash", regionTitle: "🇺🇿 O'zbekiston viloyatlari", feelsLike: "Sefr qiladi", humidity: "Namlik", wind: "Shamol", pressure: "Bosim", hourly: "⏰ 48 soatlik prognoz", details: "📋 Batafsil", tempLabel: "Harorat", feelsLabel: "sefr", windSpeed: "Shamol tezligi", pressUnit: "gPa", footer: "© 2026 O'zbekiston Ob-Havo", loading: "🌤️ Yuklanmoqda...", errorMsg: "❌ Shahar topilmadi", mapWeatherTitle: "📍 Joy ob-havosi", mapSearchPlaceholder: "Shahar nomi...", mapSearchBtn: "Qidirish", countriesTitle: "🌍 Davlatlar", favoriteAdded: "Sevimlilarga qo'shildi", favoriteRemoved: "Sevimlilardan olib tashlandi", weatherFor: "Ob-havo", close: "Yopish" },
+            ru: { logoTitle: "🇺🇿 Погода", logoSub: "13 областей | 400+ COUNTRIES | Accurate forecast", navHome: "🏠 Главная", navMap: "🗺️ Карта", navCountries: "🌍 Страны", navContact: "📞 Контакты", searchPlaceholder: "Город...", searchBtn: "Поиск", regionTitle: "🇺🇿 Области", feelsLike: "Ощущается", humidity: "Влажность", wind: "Ветер", pressure: "Давление", hourly: "⏰ 48 часов", details: "📋 Подробно", tempLabel: "Температура", feelsLabel: "ощущается", windSpeed: "Скорость ветра", pressUnit: "гПа", footer: "© 2026 Узбекистан Погода", loading: "🌤️ Загрузка...", errorMsg: "❌ Не найдено", mapWeatherTitle: "📍 Погода", mapSearchPlaceholder: "Город...", mapSearchBtn: "Поиск", countriesTitle: "🌍 Страны", favoriteAdded: "В избранное", favoriteRemoved: "Из избранного", weatherFor: "Погода", close: "Закрыть" },
+            en: { logoTitle: "🇺🇿 Weather", logoSub: "13 regions | 400+ ШТАТЫ | Точный прогноз ", navHome: "🏠 Home", navMap: "🗺️ Map", navCountries: "🌍 Countries", navContact: "📞 Contact", searchPlaceholder: "City...", searchBtn: "Search", regionTitle: "🇺🇿 Regions", feelsLike: "Feels like", humidity: "Humidity", wind: "Wind", pressure: "Pressure", hourly: "⏰ 48-hour", details: "📋 Details", tempLabel: "Temp", feelsLabel: "feels", windSpeed: "Wind speed", pressUnit: "hPa", footer: "© 2026 Uzbekistan Weather", loading: "🌤️ Loading...", errorMsg: "❌ Not found", mapWeatherTitle: "📍 Weather", mapSearchPlaceholder: "City...", mapSearchBtn: "Search", countriesTitle: "🌍 Countries", favoriteAdded: "Added to fav", favoriteRemoved: "Removed from fav", weatherFor: "Weather", close: "Close" }
+        };
+        
+        let currentLang = localStorage.getItem('weatherLang') || 'uz';
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        let currentCity = 'Tashkent';
+        let currentDisplayCity = 'Toshkent';
+        let weatherCache = null;
+        let hourlyCache = [];
+        
+        function showNotification(message, isSuccess = true) {
+            const n = document.createElement('div');
+            n.className = 'notification';
+            n.style.background = isSuccess ? '#10b981' : '#ef4444';
+            n.textContent = message;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 2000);
+        }
+        
+        function saveFavorites() { localStorage.setItem('favoriteCountries', JSON.stringify(favorites)); }
+        
+        function toggleFavorite(country, event) {
+            event.stopPropagation();
+            const t = TEXTS[currentLang];
+            const idx = favorites.indexOf(country);
+            if (idx === -1) {
+                favorites.push(country);
+                showNotification(`✅ ${country} ${t.favoriteAdded}`);
+            } else {
+                favorites.splice(idx, 1);
+                showNotification(`❌ ${country} ${t.favoriteRemoved}`);
+            }
+            saveFavorites();
+            renderCountriesList();
+        }
+        
+        function renderCountriesList() {
+            const container = document.getElementById('countriesList');
+            if (!container) return;
+            const sorted = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
+            const favs = sorted.filter(c => favorites.includes(c));
+            const others = sorted.filter(c => !favorites.includes(c));
+            const all = [...favs, ...others];
+            container.innerHTML = all.map(c => `<div class="country-item" data-country="${c}"><span class="country-name">${c}</span><button class="star-btn ${favorites.includes(c) ? 'active' : ''}" data-country="${c}">${favorites.includes(c) ? '★' : '☆'}</button></div>`).join('');
+            document.querySelectorAll('.country-item').forEach(el => { el.addEventListener('click', (e) => { if (!e.target.classList.contains('star-btn')) showCountryWeather(el.dataset.country); }); });
+            document.querySelectorAll('.star-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(btn.dataset.country, e); }); });
+        }
+        
+        async function showCountryWeather(country) {
+            const modal = document.getElementById('countryWeatherModal');
+            const content = document.getElementById('countryWeatherContent');
+            const title = document.getElementById('countryWeatherTitle');
+            const t = TEXTS[currentLang];
+            title.textContent = `${country} - ${t.weatherFor}`;
+            content.innerHTML = `<div style="text-align:center; padding:20px;">⏳ ${t.loading}</div>`;
+            modal.style.display = 'flex';
+            try {
+                const w = await fetchWeatherData(country);
+                const icon = getWeatherIcon(w.main);
+                const desc = getWeatherDesc(w.main, currentLang);
+                content.innerHTML = `<div style="text-align:center;"><div style="font-size:4rem;">${icon}</div><div style="font-size:3rem; font-weight:800;">${w.temp}°</div><div>${t.feelsLike} ${w.feels}°</div><div style="font-size:1.5rem; margin-top:10px;">${country}</div><div>${desc}</div><div class="chips" style="justify-content:center; margin-top:15px;"><span class="chip">🌡️ ${w.temp}°C</span><span class="chip">💧 ${w.humidity}%</span><span class="chip">💨 ${w.wind} km/h</span><span class="chip">📊 ${w.pressure} hPa</span></div><button class="nav-btn" onclick="document.getElementById('countryWeatherModal').style.display='none'" style="margin-top:20px;">✕ ${t.close}</button></div>`;
+            } catch { content.innerHTML = `<div style="text-align:center; color:#f97316;">⚠️ ${t.errorMsg}<br><br><button class="nav-btn" onclick="document.getElementById('countryWeatherModal').style.display='none'">✕ ${t.close}</button></div>`; }
+        }
+        
+        function setTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('theme', theme);
+            document.body.classList.toggle('dark', theme === 'dark');
+            document.querySelectorAll('.theme-option').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+        }
+        
+        async function fetchWeatherData(city) {
+            const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`);
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            return { name: d.name, country: d.sys.country, temp: Math.round(d.main.temp), feels: Math.round(d.main.feels_like), humidity: d.main.humidity, pressure: d.main.pressure, wind: (d.wind.speed * 3.6).toFixed(1), main: d.weather[0].main, lat: d.coord.lat, lon: d.coord.lon };
+        }
+        
+        async function fetchHourlyData(lat, lon) {
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`);
+                const d = await res.json();
+                return d.list.slice(0, 13).map(i => {
+                    const date = new Date(i.dt * 1000);
+                    let timeStr = `${date.getHours()}:00`;
+                    if (currentLang === 'en') { let h = date.getHours(); let ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; timeStr = `${h} ${ampm}`; }
+                    let dayStr = '';
+                    if (currentLang === 'uz') dayStr = ['Yak','Dush','Sesh','Chor','Pay','Jum','Shan'][date.getDay()];
+                    else if (currentLang === 'ru') dayStr = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][date.getDay()];
+                    else dayStr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
+                    return { hour: timeStr, day: dayStr, temp: Math.round(i.main.temp), icon: i.weather[0].main };
+                });
+            } catch { return []; }
+        }
+        
+        function getWeatherIcon(main) { const map = { Clear:'☀️', Clouds:'☁️', Rain:'🌧️', Drizzle:'🌦️', Snow:'❄️', Thunderstorm:'⛈️', Mist:'🌫️' }; return map[main] || '🌡️'; }
+        function getWeatherDesc(main, lang) { const map = { uz: { Clear:'Quyoshli', Clouds:'Bulutli', Rain:'Yomgʻirli', Snow:'Qorli', Thunderstorm:'Momaqaldiroq' }, ru: { Clear:'Солнечно', Clouds:'Облачно', Rain:'Дождливо', Snow:'Снежно', Thunderstorm:'Гроза' }, en: { Clear:'Sunny', Clouds:'Cloudy', Rain:'Rainy', Snow:'Snowy', Thunderstorm:'Thunderstorm' } }; return map[lang][main] || main; }
+        
+        async function loadWeather(cityApi, displayName) {
+            const contentDiv = document.getElementById('dynamicContent');
+            const t = TEXTS[currentLang];
+            contentDiv.innerHTML = `<div class="loading-state"><div style="font-size:3rem;">⏳</div><p>${t.loading}</p></div>`;
+            try {
+                const weather = await fetchWeatherData(cityApi);
+                const hourly = await fetchHourlyData(weather.lat, weather.lon);
+                weatherCache = weather; hourlyCache = hourly;
+                currentCity = cityApi;
+                currentDisplayCity = displayName || weather.name;
+                renderFullUI();
+                document.body.setAttribute('data-weather', weather.main.toLowerCase());
+            } catch { contentDiv.innerHTML = `<div class="error-state">⚠️ ${t.errorMsg}<br><br><button class="nav-btn" onclick="location.reload()">🔄 Qayta</button></div>`; }
+        }
+        
+        function renderFullUI() {
+            if (!weatherCache) return;
+            const t = TEXTS[currentLang];
+            const icon = getWeatherIcon(weatherCache.main);
+            const desc = getWeatherDesc(weatherCache.main, currentLang);
+            const regionsList = REGIONS[currentLang];
+            let regionsHtml = `<div class="regions-card"><div class="section-title">📍 ${t.regionTitle}</div><div class="region-grid">`;
+            regionsList.forEach((reg, idx) => { const api = API_NAMES[idx]; const active = (currentDisplayCity === reg || currentCity === api); regionsHtml += `<button class="region-item ${active ? 'active' : ''}" data-api="${api}" data-disp="${reg}">${reg}</button>`; });
+            regionsHtml += `</div></div>`;
+            const hourlyHtml = `<div class="hourly-card"><div class="section-title">${t.hourly}</div><div class="hourly-scroll">${hourlyCache.map(h => `<div class="hour-item"><div class="hour-time">${h.day} ${h.hour}</div><div class="hour-icon">${getWeatherIcon(h.icon)}</div><div class="hour-temp">${h.temp}°</div></div>`).join('')}</div></div>`;
+            const detailsHtml = `<div class="details-card"><div class="section-title">${t.details}</div><div class="details-grid"><div class="detail-item"><div class="detail-icon">🌡️</div><div><div class="detail-label">${t.tempLabel}</div><div class="detail-value">${weatherCache.temp}°C (${t.feelsLabel} ${weatherCache.feels}°)</div></div></div><div class="detail-item"><div class="detail-icon">💧</div><div><div class="detail-label">${t.humidity}</div><div class="detail-value">${weatherCache.humidity}%</div></div></div><div class="detail-item"><div class="detail-icon">💨</div><div><div class="detail-label">${t.windSpeed}</div><div class="detail-value">${weatherCache.wind} km/h</div></div></div><div class="detail-item"><div class="detail-icon">📊</div><div><div class="detail-label">${t.pressure}</div><div class="detail-value">${weatherCache.pressure} ${t.pressUnit}</div></div></div></div></div>`;
+            const mainHtml = `<div class="weather-main"><div class="weather-row"><div class="temp-block"><div class="weather-icon">${icon}</div><div class="temp-big">${weatherCache.temp}°</div><div class="feels-like">${t.feelsLike} ${weatherCache.feels}°</div></div><div><div class="city-name">${currentDisplayCity}, ${weatherCache.country}</div><div class="weather-desc-text">${desc}</div><div class="chips"><span class="chip">🌡️ ${weatherCache.temp}°C</span><span class="chip">💧 ${weatherCache.humidity}%</span><span class="chip">💨 ${weatherCache.wind} km/h</span></div></div></div><div class="stats-4"><div class="stat-item"><div class="stat-icon">🌡️</div><div class="stat-label">${t.feelsLike}</div><div class="stat-value">${weatherCache.feels}°</div></div><div class="stat-item"><div class="stat-icon">💧</div><div class="stat-label">${t.humidity}</div><div class="stat-value">${weatherCache.humidity}%</div></div><div class="stat-item"><div class="stat-icon">💨</div><div class="stat-label">${t.wind}</div><div class="stat-value">${weatherCache.wind} km/h</div></div><div class="stat-item"><div class="stat-icon">📊</div><div class="stat-label">${t.pressure}</div><div class="stat-value">${weatherCache.pressure} hPa</div></div></div></div>`;
+            document.getElementById('dynamicContent').innerHTML = regionsHtml + mainHtml + hourlyHtml + detailsHtml;
+            document.querySelectorAll('.region-item').forEach(btn => { btn.addEventListener('click', () => loadWeather(btn.dataset.api, btn.dataset.disp)); });
+        }
+        
+        function updateUITexts() {
+            const t = TEXTS[currentLang];
+            document.getElementById('logoTitle').innerHTML = t.logoTitle;
+            document.getElementById('logoSub').innerHTML = t.logoSub;
+            document.getElementById('navHomeBtn').innerHTML = t.navHome;
+            document.getElementById('navMapBtn').innerHTML = t.navMap;
+            document.getElementById('navCountriesBtn').innerHTML = t.navCountries;
+            document.getElementById('navContactBtn').innerHTML = t.navContact;
+            document.getElementById('citySearchInput').placeholder = t.searchPlaceholder;
+            document.getElementById('searchCityBtn').innerHTML = t.searchBtn;
+            document.getElementById('footerText').innerHTML = t.footer;
+            document.getElementById('mapWeatherInfo').innerHTML = t.mapWeatherTitle;
+            document.getElementById('mapLocationInput').placeholder = t.mapSearchPlaceholder;
+            document.getElementById('countriesModalTitle').innerHTML = t.countriesTitle;
+            const mb = document.getElementById('mapSearchLocationBtn');
+            if (mb) mb.innerHTML = t.mapSearchBtn;
+            document.querySelectorAll('.lang-option').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+            if (weatherCache) renderFullUI();
+            renderCountriesList();
+        }
+        
+        function changeLanguage(lang) { currentLang = lang; localStorage.setItem('weatherLang', lang); updateUITexts(); }
+        function handleSearch() { const q = document.getElementById('citySearchInput').value.trim(); if (q) loadWeather(q, q); }
+        async function searchMapLocation() {
+            const loc = document.getElementById('mapLocationInput').value.trim();
+            if (!loc) return;
+            const div = document.getElementById('mapWeatherInfo');
+            div.innerHTML = "⏳...";
+            try {
+                const geo = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(loc)}&limit=1&appid=${API_KEY}`);
+                const data = await geo.json();
+                if (data.length) {
+                    const { lat, lon, name } = data[0];
+                    document.getElementById('mapIframe').src = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d250000!2d${lon}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1700000000000`;
+                    const w = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`);
+                    const wd = await w.json();
+                    div.innerHTML = `<strong>📍 ${name}</strong><br>🌡️ ${Math.round(wd.main.temp)}°C<br>💧 ${wd.main.humidity}%<br>💨 ${(wd.wind.speed * 3.6).toFixed(1)} km/h`;
+                } else div.innerHTML = "❌ Topilmadi";
+            } catch { div.innerHTML = "❌ Xatolik"; }
+        }
+        
+        document.getElementById('searchCityBtn').addEventListener('click', handleSearch);
+        document.getElementById('citySearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
+        document.getElementById('homeBtn').addEventListener('click', () => loadWeather('Tashkent', currentLang === 'uz' ? 'Toshkent' : (currentLang === 'ru' ? 'Ташкент' : 'Tashkent')));
+        document.getElementById('navHomeBtn').addEventListener('click', () => loadWeather('Tashkent', currentLang === 'uz' ? 'Toshkent' : (currentLang === 'ru' ? 'Ташкент' : 'Tashkent')));
+        document.getElementById('navMapBtn').addEventListener('click', () => document.getElementById('mapModal').style.display = 'flex');
+        document.getElementById('navCountriesBtn').addEventListener('click', () => { renderCountriesList(); document.getElementById('countriesModal').style.display = 'flex'; });
+        document.getElementById('navContactBtn').addEventListener('click', () => document.getElementById('contactModal').style.display = 'flex');
+        document.getElementById('closeMapBtn').addEventListener('click', () => document.getElementById('mapModal').style.display = 'none');
+        document.getElementById('closeContactBtn').addEventListener('click', () => document.getElementById('contactModal').style.display = 'none');
+        document.getElementById('closeCountriesBtn').addEventListener('click', () => document.getElementById('countriesModal').style.display = 'none');
+        document.getElementById('closeCountryWeatherBtn').addEventListener('click', () => document.getElementById('countryWeatherModal').style.display = 'none');
+        document.getElementById('mapSearchLocationBtn').addEventListener('click', searchMapLocation);
+        document.getElementById('mapLocationInput').addEventListener('keypress', e => { if (e.key === 'Enter') searchMapLocation(); });
+        window.onclick = e => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; };
+        document.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => changeLanguage(btn.dataset.lang)));
+        document.querySelectorAll('.theme-option').forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.theme)));
+        
+        setTheme(currentTheme);
+        changeLanguage(currentLang);
+        loadWeather('Tashkent', currentLang === 'uz' ? 'Toshkent' : (currentLang === 'ru' ? 'Ташкент' : 'Tashkent'));
+    </script>
+</body>
+</html>
