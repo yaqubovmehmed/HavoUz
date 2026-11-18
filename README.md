@@ -9,7 +9,7 @@ O‘zbekiston hududlari va dunyo shaharlari uchun ob-havo ma’lumotlarini ko‘
 - Toshkentdan boshlab joriy ob-havo va 3 soatlik oraliqlarda soatlik prognoz
 - O‘zbekiston hududlari ob-havosiga tez o‘tish
 - Shahar nomi bo‘yicha qidirish
-- 400 dan ortiq mamlakat ob-havosini ko‘rish va sevimlilarni saqlash
+- mamlakat va shaharlardagi ob-havoni ko‘rish va sevimlilarni saqlash
 - Harorat, his qilinadigan harorat, namlik, shamol tezligi va bosim
 - Xarita orqali joy qidirish
 - Yorug‘ va qorong‘i ko‘rinish; tanlovlar brauzerda saqlanadi
